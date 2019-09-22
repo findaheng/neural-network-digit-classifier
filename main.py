@@ -60,3 +60,28 @@ cross_entropy = tf.reduce_mean(
 train_step = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
 
 
+# MARK : - Training and Testing
+
+correct_pred = tf.equal(tf.argmax(output_layer, 1), tf.argmax(Y, 1))  # returns list of Booleans
+accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+init = tf.global_variables_initializer()
+session = tf.Session()
+session.run(init)
+
+# trains and prints loss and accuracy on mini batches of 100 iterations
+for i in range(num_iterations):
+	batch_x, batch_y = mnist.train.next_batch(batch_size)
+	session.run(train_step, feed_dict={X: batch_x, Y: batch_y, keep_prob: droupout})
+
+	# should not expect increasing accuracy here because values are per batch only
+	if not i % 100:
+		mini_batch_loss, mini_batch_accuracy = sess.run(
+			[cross_entropy, accuracy], feed_dict={X: batch_x, Y: batch_y, keep_prob: 1.0})
+		print(f'Iteration {i}\t|Loss = {mini_batch_loss}\t|Accuracy = {mini_batch_accuracy}')
+print("\n")
+
+# run on test set
+test_accuracy = session.run(accuracy, feed_dict={X: mnist.test.images, Y: mnist.test.labels, keep_prob: 1.0})
+print(f'Accuracy on test set: {test_accuracy}')
+
